@@ -5,12 +5,14 @@ import StudentRoute from './routes/studentroute.js';
 import ProductRoute from './routes/productRoute.js';
 import UserRoute from './routes/userRoute.js';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app = express();
 
 const PORT =  5000;
 
-const mongoUrl = 'mongodb+srv://tharushi:1234@cluster0.pxzdg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const mongoUrl = process.env.MONGO_URL
 
 mongoose.connect(mongoUrl, {})
 const connection = mongoose.connection;

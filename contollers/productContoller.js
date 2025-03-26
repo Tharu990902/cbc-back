@@ -22,13 +22,15 @@ export function Createproduct(req,res){
 }
 };
 
-export function Getproduct(req,res){
+export async function Getproduct(req,res){
     
-    Product.find().then((productlist)=>{
+    try{
+        const productlist = await Product.find()
         res.json(productlist);
-    }).catch((err)=>{
-        res.json({message: err.message});
-    })
+    }
+    catch(e){
+        res.json({message: "Error occured"});
+}
 };
 
 export function Deleteproduct(req,res){
