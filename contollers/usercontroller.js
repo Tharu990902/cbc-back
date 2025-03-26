@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-
 export function Createuser(req,res){
 
     const newuserdata = req.body;
