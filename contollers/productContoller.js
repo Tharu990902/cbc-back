@@ -23,7 +23,6 @@ export function Createproduct(req,res){
 };
 
 export async function Getproduct(req,res){
-    
     try{
         const productlist = await Product.find()
         res.json(productlist);

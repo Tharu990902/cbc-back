@@ -1,6 +1,9 @@
 import User from "../modles/user.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 export function Createuser(req,res){
 
@@ -17,6 +20,8 @@ export function Createuser(req,res){
 }
 
 export function LoginUser(req,res){
+
+    
 
     User.find({email : req.body.email}).then((User)=>{
         if(User.length == 0){
@@ -35,7 +40,7 @@ export function LoginUser(req,res){
                 isBlocked: user.isBlocked,
                 type: user.type,
                 profilePicture: user.profilePicture
-            } , 'tharu');
+            } , process.env.SECTER_KEY);
             
 
             res.json({message: "login success", token: token});
