@@ -68,7 +68,7 @@ export function LoginUser(req,res){
 }
 
 
-export function isAdmin(req,res){
+export function isAdmin(req){
 
     if(req.user == null){
         return false;
@@ -79,7 +79,7 @@ export function isAdmin(req,res){
 
     return true;
 }
-export function isCustomer(req,res){
+export function isCustomer(req){
 
     if(req.user == null){
         return false;
