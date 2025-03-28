@@ -2,11 +2,24 @@ import User from "../modles/user.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export function Createuser(req,res){
 
     const newuserdata = req.body;
+
+    if(newuserdata.type == "admin"){
+        
+        if(req.user == null ){
+            res.json({message: "You are not authorized to create an admin user"});
+            return
+        }
+        if( req.user.type != "admin"){
+            res.json({message: "You are not authorized to create an admin user"});
+            return
+        }
+    }
     newuserdata.password = bcrypt.hashSync(newuserdata.password, 10); // hash password
     const newuser = new User(newuserdata);
     newuser.save().then(()=>{
@@ -16,12 +29,12 @@ export function Createuser(req,res){
         res.json({message: err.message});
         console.log(err.message);
     })
+
 }
 
 export function LoginUser(req,res){
 
     
-
     User.find({email : req.body.email}).then((User)=>{
         if(User.length == 0){
             res.json({message: "User not found"});
@@ -48,7 +61,39 @@ export function LoginUser(req,res){
             res.json({message: "invalid password"});
     }
     }}
+    
 ).catch((err)=>{
     res.json({message: err.message});
     console.log(err.message);})
 }
+
+
+export function isAdmin(req,res){
+
+    if(req.user == null){
+        return false;
+    }
+    if(req.user.type != "admin"){
+        return false;
+    }
+
+    return true;
+}
+export function isCustomer(req,res){
+
+    if(req.user == null){
+        return false;
+    }
+    if(req.user.type != "customer"){
+        return false;
+    }
+
+    return true;
+}
+
+
+
+// "Tharu@123gmail.com",
+//hashedpassword123
+
+//johnkamal@gmail.com
