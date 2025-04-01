@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import UserRoute from './routes/userRoute.js';
 import ProductRoute from './routes/productRoute.js';
+import OrderRoute from './routes/orderRoute.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -38,6 +39,7 @@ app.use((req, res, next) => {
 
 app.use('/api/user', UserRoute);
 app.use('/api/product' , ProductRoute);
+app.use('/api/order' , OrderRoute);
 
 
 app.listen(5000, () => {
