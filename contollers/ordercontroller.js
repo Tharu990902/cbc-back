@@ -26,12 +26,12 @@ export async function Createorder(req,res){
             const newIdNumber = currentIdNumber + 1; // increment the number part by 1
              orderID = "CBC" + newIdNumber.toString().padStart(4, '0'); // create the new order id
              
-            
         }
 
         const newOrderdata = req.body
 
         const newproductArray = []
+        let newstock;
 
         for(let i=0;i<newOrderdata.order_items.length;i++){
             
@@ -48,8 +48,15 @@ export async function Createorder(req,res){
                 price: productdetail.price,
                 image: productdetail.images[0],
             })
-           
-           
+
+            // minimize the stock count
+
+            if(productdetail.stock < newOrderdata.order_items[i].quantity){
+                res.json({message: "ProductId = " + newOrderdata.order_items[i].productId +" not enough stock"})
+                return
+            }
+            
+            await updateproductstock(newOrderdata.order_items);
         }
            newOrderdata.order_items = newproductArray; 
            newOrderdata.orderID = orderID; 
@@ -62,7 +69,6 @@ export async function Createorder(req,res){
                 res.json({message: error.message});
                 console.log(error.message);
            })
-       
 
 
     } catch (error) {
@@ -70,4 +76,22 @@ export async function Createorder(req,res){
         
     }
 };
+
+export async function updateproductstock(order_items) {
+
+    for (let i = 0; i < order_items.length; i++) {
+            
+        const newproduct = await Product.findOne({ productId: order_items[i].productId });
+        const newstock = newproduct.stock - order_items[i].quantity;
+        newproduct.stock = newstock;
+
+        try {
+            await newproduct.save();
+            console.log(`Product stock updated for Product ID ${order_items[i].productId}.`);
+        } catch (error) {
+            console.log(`Error updating stock for Product ID ${order_items[i].productId}: ${error.message}`);
+        }
+    }
+}
+
 
