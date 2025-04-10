@@ -1,6 +1,6 @@
 import Product from "../modles/product.js";
 import { isAdmin , isCustomer } from "./usercontroller.js";
-import Order from "../modles/order.js";
+
 
 export  async  function  Createproduct(req,res){
 
@@ -8,14 +8,24 @@ export  async  function  Createproduct(req,res){
             res.json({message :"You are not authorized to create a product"})
             return
         }
-        const product  = new Product(req.body);
+        const productdata = req.body;
+        const product  = new Product(productdata);
 
-       
-        product.save().then(()=>{
+        try {
+            await product.save()
             res.json({message: "product created"})
-        }).catch((error)=>{
+            console.log(productdata)
+        }
+        catch (error) {
             res.json({message: "error"})
-        }) 
+            console.log(error)
+        }
+       
+    //    await  product.save().then(()=>{
+    //         res.json({message: "product created"})
+    //     }).catch((error)=>{
+    //         res.json({message: "error"})
+    //     }) 
         
         
 }

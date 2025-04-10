@@ -55,7 +55,15 @@ export function LoginUser(req,res){
             } , process.env.SECTER_KEY);
             
 
-            res.json({message: "login success", token: token});
+            res.json({message: "login success", token: token ,
+                user:{
+                    firstname: user.firstname,
+                    lastname: user.lastname,
+                    type: user.type,
+                    profilePicture: user.profilePicture,
+
+                }
+            });
         }
         else{
             res.json({message: "invalid password"});
