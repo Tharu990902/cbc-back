@@ -38,7 +38,6 @@ app.use((req, res, next) => {
     next();
 });
 
-
 app.use('/api/user', UserRoute);
 app.use('/api/product' , ProductRoute);
 app.use('/api/order' , OrderRoute);
