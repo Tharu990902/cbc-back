@@ -17,7 +17,7 @@ const OrderSchema = mongoose.Schema({
                 type: String,
                 required: true,
             },
-            quantity: {
+            qty: {
                 type: Number,
                 required: true,
             },
@@ -38,7 +38,7 @@ const OrderSchema = mongoose.Schema({
     },
     paymentid: {
         type: String,
-        required: true,
+        
     },
     status: {
         type: String,

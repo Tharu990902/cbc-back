@@ -1,5 +1,5 @@
 import Order from "../modles/order.js";
-import { isCustomer } from "./usercontroller.js";
+import { isAdmin, isCustomer } from "./usercontroller.js";
 import Product from "../modles/product.js";
 
 export async function Createorder(req,res){
@@ -12,6 +12,7 @@ export async function Createorder(req,res){
     try {
 
         const lastorderId = await Order.find().sort({date: -1}).limit(1);
+        
 
         let orderID;
 
@@ -27,9 +28,10 @@ export async function Createorder(req,res){
         }
 
         const newOrderdata = req.body
+        console.log(newOrderdata)
 
         const newproductArray = []
-        let newstock;
+        
 
         for(let i=0;i<newOrderdata.order_items.length;i++){
             
@@ -42,27 +44,23 @@ export async function Createorder(req,res){
             
             newproductArray[i]= ({
                 name: productdetail.productname,
-                quantity: newOrderdata.order_items[i].qty,
-                price: productdetail.price,
+                qty: newOrderdata.order_items[i].qty,
+                price: productdetail.lastprice,
                 image: productdetail.images[0],
             })
-
-            // minimize the stock count
-
-            if(productdetail.stock < newOrderdata.order_items[i].quantity){
-                res.json({message: "ProductId = " + newOrderdata.order_items[i].productId +" not enough stock"})
-                return
-            }
             
-            await updateproductstock(newOrderdata.order_items);
+            await updateproductstock(newOrderdata.order_items); 
         }
            newOrderdata.order_items = newproductArray; 
            newOrderdata.orderID = orderID; 
            newOrderdata.email = req.user.email; 
 
            const order = new Order(newOrderdata); 
-            await  order.save().then(()=>{
-                res.json({message: "order created"});
+
+           const savedorder =  await  order.save()
+           
+                res.json({message: "order created",
+                            order: savedorder
            }).catch((error)=>{
                 res.json({message: error.message});
                 console.log(error.message);
@@ -80,14 +78,12 @@ export async function getQuote(req,res){
     try {
 
         const newOrderdata = req.body
-
+        console.log(req.body)
         const newproductArray = []
 
         let Total =0;
         let labledTotal = 0;
-        let discount = 0;
         
-
         for(let i=0;i<newOrderdata.order_items.length;i++){
             
             const productdetail = await Product.findOne({productId: newOrderdata.order_items[i].productId});
@@ -99,6 +95,8 @@ export async function getQuote(req,res){
 
             Total += productdetail.lastprice * newOrderdata.order_items[i].qty;
             labledTotal += productdetail.price * newOrderdata.order_items[i].qty;
+
+            
             
             newproductArray[i]= ({
                 name: productdetail.productname,
@@ -106,23 +104,27 @@ export async function getQuote(req,res){
                 price: productdetail.lastprice,
                 labledprice: productdetail.price,
                 image: productdetail.images[0],
-                Total : Total,
-                labledTotal: labledTotal
+                
+                
             })
   
         }
+           
            newOrderdata.order_items = newproductArray;
+           newOrderdata.Total = Total;
+           newOrderdata.labledTotal = labledTotal;
+           
+           
+           console.log()
            
            res.json({
-            orderItems : newproductArray
+            orderItems : newOrderdata.order_items,
+            Total : Total,
+            labeldTotal : labledTotal
            });
-        
-          
     } catch (error) {
-        res.status(500).json({message: error.message});
-        
+        res.status(500).json({message: error.message})
     }
-
 }
 
 export async function updateproductstock(order_items) {
@@ -130,16 +132,40 @@ export async function updateproductstock(order_items) {
     for (let i = 0; i < order_items.length; i++) {
             
         const newproduct = await Product.findOne({ productId: order_items[i].productId });
-        const newstock = newproduct.stock - order_items[i].quantity;
+        const newstock = newproduct.stock - order_items[i].qty;
         newproduct.stock = newstock;
 
         try {
             await newproduct.save();
-            console.log(`Product stock updated for Product ID ${order_items[i].productId}.`);
+            // console.log(`Product stock updated for Product ID ${order_items[i].productId}.`);
         } catch (error) {
             console.log(`Error updating stock for Product ID ${order_items[i].productId}: ${error.message}`);
         }
     }
 }
+
+export async function getOrder(req,res){
+
+    try {
+        if(isCustomer(req)){
+        const orders = await Order.find({email: req.user.email})
+        res.json(orders);
+        }
+        else if(isAdmin(req)){
+            const orders = await Order.find({})
+            res.json(orders);
+        }else{
+            res.json({
+                message: "please Login to view Orders"
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+
 
 
