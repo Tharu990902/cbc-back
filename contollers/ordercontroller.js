@@ -4,8 +4,6 @@ import Product from "../modles/product.js";
 
 export async function Createorder(req,res){
     
-    // cbc0001
-    // check previous oeder id
     if(!isCustomer){
         res.json({message :"You are not authorized to create a order"});
         return
@@ -44,7 +42,7 @@ export async function Createorder(req,res){
             
             newproductArray[i]= ({
                 name: productdetail.productname,
-                quantity: newOrderdata.order_items[i].quantity,
+                quantity: newOrderdata.order_items[i].qty,
                 price: productdetail.price,
                 image: productdetail.images[0],
             })
@@ -76,6 +74,56 @@ export async function Createorder(req,res){
         
     }
 };
+
+export async function getQuote(req,res){
+
+    try {
+
+        const newOrderdata = req.body
+
+        const newproductArray = []
+
+        let Total =0;
+        let labledTotal = 0;
+        let discount = 0;
+        
+
+        for(let i=0;i<newOrderdata.order_items.length;i++){
+            
+            const productdetail = await Product.findOne({productId: newOrderdata.order_items[i].productId});
+
+            if(productdetail == null){
+                res.json({message: "ProductId = " + newOrderdata.order_items[i].productId +" not found"})
+                return
+            }
+
+            Total += productdetail.lastprice * newOrderdata.order_items[i].qty;
+            labledTotal += productdetail.price * newOrderdata.order_items[i].qty;
+            
+            newproductArray[i]= ({
+                name: productdetail.productname,
+                qty: newOrderdata.order_items[i].qty,
+                price: productdetail.lastprice,
+                labledprice: productdetail.price,
+                image: productdetail.images[0],
+                Total : Total,
+                labledTotal: labledTotal
+            })
+  
+        }
+           newOrderdata.order_items = newproductArray;
+           
+           res.json({
+            orderItems : newproductArray
+           });
+        
+          
+    } catch (error) {
+        res.status(500).json({message: error.message});
+        
+    }
+
+}
 
 export async function updateproductstock(order_items) {
 
