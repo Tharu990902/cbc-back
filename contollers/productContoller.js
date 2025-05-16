@@ -10,7 +10,6 @@ export  async  function  Createproduct(req,res){
         }
         const productdata = req.body;
         const product  = new Product(productdata);
-
         try {
             await product.save()
             res.json({message: "product created"})
@@ -75,5 +74,47 @@ export async function Getproductbyid(req, res) {
         res.status(500).json({ message: "Server error" });
     }
 }
+ 
+export async function Getproductbybycategor(req,res){
+
+    const category = req.param.category;
+    console.log("fetching product with category:", category);
+    try{
+        const product = await product.find({category: category});
+        res.json(product);
+    } 
+    catch(error){
+        console.log("Error fetching product:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+export async function SearchProduct(req, res) {
+    const query = req.params.query;
+
+    // Validate query
+    if (typeof query !== "string" || !query.trim()) {
+        return res.status(400).json({ error: "Invalid search query" });
+    }
+
+    try {
+        // Search in productname and alternames (if alternames is an array)
+        const product = await Product.find({
+            $or: [
+                { productname: { $regex: query, $options: 'i' } },
+               {alternames: { $regex: query, $options: 'i' }}  ,
+               {description: { $regex: query, $options: 'i' }}
+            ]
+        });
+
+        res.json(product);
+    } catch (error) {
+        console.log("Error searching for product:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+
+
 
 

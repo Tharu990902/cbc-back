@@ -47,7 +47,7 @@ const OrderSchema = mongoose.Schema({
     note: {
         type: String,
     },
-    name:{
+    Name:{
         type: String,
         required: true,
     },
@@ -55,10 +55,18 @@ const OrderSchema = mongoose.Schema({
         type: String,
         required: true,
     },
-    phoneNo:{
+    phone:{
         type: String,
         required: true,
     },
+    city:{
+        type: String,
+        required: true,
+    },
+    province:{
+        type: String,
+        required: true,
+    }
         
 })
 

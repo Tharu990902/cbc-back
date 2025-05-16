@@ -13,7 +13,6 @@ export async function Createorder(req,res){
 
         const lastorderId = await Order.find().sort({date: -1}).limit(1);
         
-
         let orderID;
 
         if(lastorderId.length == 0){
@@ -26,7 +25,7 @@ export async function Createorder(req,res){
              orderID = "CBC" + newIdNumber.toString().padStart(4, '0'); // create the new order id
              
         }
-
+        console.log("New Order ID: " + orderID);
         const newOrderdata = req.body
         console.log(newOrderdata)
 
@@ -50,16 +49,22 @@ export async function Createorder(req,res){
             })
             
             await updateproductstock(newOrderdata.order_items); 
+            console.log("Product stock updated for Product ID " + newOrderdata.order_items[i].productId);
         }
            newOrderdata.order_items = newproductArray; 
            newOrderdata.orderID = orderID; 
-           newOrderdata.email = req.user.email; 
+           newOrderdata.email = newOrderdata.email; 
+           newOrderdata.Name = newOrderdata.shippingAddress?.name;
+            newOrderdata.address = newOrderdata.shippingAddress?.address;
+            newOrderdata.phone = newOrderdata.shippingAddress?.phone;
+            newOrderdata.city = newOrderdata.shippingAddress?.city;
+            newOrderdata.province = newOrderdata.shippingAddress?.province;
 
            const order = new Order(newOrderdata); 
 
            const savedorder =  await  order.save()
            
-                res.json({message: "order created",
+             res.json({message: "order created",
                             order: savedorder
            }).catch((error)=>{
                 res.json({message: error.message});
@@ -76,7 +81,7 @@ export async function Createorder(req,res){
 export async function getQuote(req,res){
 
     try {
-
+        
         const newOrderdata = req.body
         console.log(req.body)
         const newproductArray = []
@@ -114,14 +119,12 @@ export async function getQuote(req,res){
            newOrderdata.Total = Total;
            newOrderdata.labledTotal = labledTotal;
            
-           
-           console.log()
-           
            res.json({
             orderItems : newOrderdata.order_items,
             Total : Total,
             labeldTotal : labledTotal
            });
+
     } catch (error) {
         res.status(500).json({message: error.message})
     }
@@ -166,6 +169,24 @@ export async function getOrder(req,res){
     }
 }
 
+export async function updateOrder(req,res){
 
+   if(!isAdmin(req)){
+        res.json({message :"You are not authorized to update a order"})
+        return
+    }
+    const orderId = req.params.id;
+    const updatedData = req.body;
+    console.log(updatedData)
+    try {
+        const updatedOrder = await Order.updateOne({orderID: orderId}, updatedData);
+        res.json({message: "Order updated successfully", order: updatedOrder});
+
+    }   catch (error) {
+        res.status(403).json({message: error.message});
+    } 
+  }
+
+ 
 
 
